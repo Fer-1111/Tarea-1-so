@@ -35,6 +35,7 @@ int main() {
         if (fork() == 0) {
             if(execvp(args[0], args) == -1){ 
 				printf("ERROR DE COMANDO\n");
+                fflush(stdout);
 			}
 			
             exit(EXIT_FAILURE);
@@ -45,7 +46,8 @@ int main() {
         free(args); // Liberar la memoria de los argumentos
 
         printf("Tarea:~$  "); // Mostrar el prompt de nuevo
-    }
+        fflush(stdout);  //Libera el buffer para imprimir directamente 
+     }
     
     free(input); // Liberar la memoria de la línea de entrada
     return 0;
