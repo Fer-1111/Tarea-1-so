@@ -5,6 +5,7 @@
 #include <sys/wait.h>
 
 int main() {
+
     char *input = NULL;
     size_t len = 0;
     ssize_t nread;
@@ -29,6 +30,10 @@ int main() {
         }
         
         args[argc] = NULL; // El último argumento debe ser NULL para execvp
+        if (argc == 0) {
+            printf("Tarea:~$  ");
+            continue;
+        }
         
         // Ejecutar el comando
         if (fork() == 0) {
