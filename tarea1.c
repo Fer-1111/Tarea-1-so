@@ -15,8 +15,7 @@ int main() {
         // Remover el salto de línea al final de la entrada
         if (input[nread - 1] == '\n') {
             input[nread - 1] = '\0';
-        }
-        
+                    }        
         // Tokenizar la línea de entrada
         char **args = malloc(sizeof(char *) * 1);
         int argc = 0;
@@ -33,22 +32,38 @@ int main() {
         
         // Ejecutar el comando
         if (fork() == 0) {
+            
             if(execvp(args[0], args) == -1){ 
 				printf("ERROR DE COMANDO\n");
                 fflush(stdout);
 			}
-			
+
             exit(EXIT_FAILURE);
+
         } else {
+
             wait(NULL); // Esperar a que el hijo termine
+
         }
 
         free(args); // Liberar la memoria de los argumentos
-
         printf("Tarea:~$  "); // Mostrar el prompt de nuevo
         fflush(stdout);  //Libera el buffer para imprimir directamente 
+
      }
-    
+
     free(input); // Liberar la memoria de la línea de entrada
     return 0;
 }
+
+
+
+
+void favs(char **args){
+
+
+
+
+
+}
+
