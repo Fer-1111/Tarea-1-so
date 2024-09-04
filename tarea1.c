@@ -17,13 +17,13 @@ int main() {
     while ((getline(&input, &len, stdin)) != -1) {
         
         //Se reemplaza el salto de linea de la entrada por '\0' (fin de string).
-        if (input[len - 1] == '\n') {
-            input[len - 1] = '\0';
+        if (input[len] == '\n') {
+            input[len] = '\0';
         }
 
         //Implementación del comando exit.
         if (strcmp(input, "exit") == 0) {
-            break;
+            exit(0);
         }
 
         //Un TOKEN es un substring extraido del original mediante un proceso de division (tokenizacion).
@@ -54,11 +54,22 @@ int main() {
         for(int i = 0; i < command_count; i++) {
             // Crear un pipe si no es el último comando
             if(i < command_count - 1) {
-                pipe(pipe_fds);
+                if(pipe(pipe_fds) == -1) { //Manejo de error de la funcion pipe().
+                    perror("Error al crear pipe.");
+                    exit(EXIT_FAILURE);
+                }
             }
-            
+
+            //Identificador del proceso actual.
+            pid_t pid = fork();
+
+            if(pid == -1) { //Manejo de error de la funcion fork().
+                perror("Error al generar nuevo proceso con fork().");
+                exit(EXIT_FAILURE);
+            }
+
             //Ejecucion del proceso hijo.
-            if(fork() == 0) {
+            if(pid == 0) {
                 //Recibir la entrada desde el pipe anterior
                 dup2(in_fd, STDIN_FILENO);
 
@@ -91,9 +102,16 @@ int main() {
                 args = (char**)realloc(args, sizeof(char *) * (argc + 1));
                 args[argc] = NULL;
 
+                //Se verifica el comando exit con cada iteracion
+                if (strcmp(args[0], "exit") == 0) {
+                    exit(0);
+                }
+
                 // Ejecutar el comando
                 if (execvp(args[0], args) == -1) {
                     perror("execvp");
+                    free(commands);  //Liberar la memoria de los comandos
+                    free(args); //Liberar la memoria de los argumentos
                     exit(EXIT_FAILURE);
                 }
             } 
@@ -107,13 +125,14 @@ int main() {
                 close(pipe_fds[1]);
                 in_fd = pipe_fds[0];
             }
+
         }
 
-        free(commands);  // Liberar la memoria de los comandos
+        free(commands); //Liberar la memoria de los comandos
         printf("Tarea:~$ ");
         fflush(stdout);
     }
 
-    free(input);  // Liberar la memoria de la línea de entrada
+    free(input); //Liberar la memoria de la línea de entrada
     return 0;
 }
