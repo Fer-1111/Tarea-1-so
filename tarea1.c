@@ -81,15 +81,15 @@ int main() {
             //Ejecucion del proceso hijo.
             if(pid == 0) {
                 //Recibir la entrada desde el pipe anterior
-                dup2(in_fd, STDIN_FILENO);
+                if(command_count != 1) {
+                    dup2(in_fd, STDIN_FILENO);
+                    close(pipe_fds[0]); 
+                } 
                 if (i < command_count - 1) {
                     //Redirigir la salida al siguiente pipe
                     dup2(pipe_fds[1], STDOUT_FILENO);
+                    close(pipe_fds[1]);
                 }
-                //Cerrar los file descriptors de pipe no usados
-                close(pipe_fds[0]); 
-                close(pipe_fds[1]);
-
                 //Tokenizar el comando en argumentos
 
                 //Vector de argumentos.
@@ -124,16 +124,24 @@ int main() {
                 //Esperar a que el proceso hijo termine
                 wait(NULL);
 
-                //Cerrar el pipe de escritura
-                close(pipe_fds[1]);
-                //Pasarle el pipe de lectura al proximo proceso
-                in_fd = pipe_fds[0];
+                if(command_count != 1){
+                    //Cerrar el pipe de escritura
+                    close(pipe_fds[1]);
+                    //Pasarle el pipe de lectura al proximo proceso
+                    in_fd = pipe_fds[0];
+                    close(pipe_fds[0]);
+                }
             }
         }
+        if(input != NULL) {
+            free(input);
+            input = NULL;
+        }
+        bufflen = 0;
+        fflush(stdout);
         free(commands); //Liberamos la memoria de los comandos
         printf("Tarea:~$ ");
     }
-    free(input); //Liberamos la memoria del input
     printf("\nAdios\n");
     return 0;
 }
