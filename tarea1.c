@@ -69,8 +69,6 @@ int main() {
             if(i < command_count - 1) {
                 if(pipe(pipe_fds) == -1) { //Manejo de error de la funcion pipe().
                     perror("Error al crear pipe.");
-                    free(input);
-                    free(commands);
                     exit(EXIT_FAILURE);
                 }
             }
@@ -78,8 +76,6 @@ int main() {
             pid_t pid = fork();
             if(pid == -1) { //Manejo de error de la funcion fork().
                 perror("Error al generar nuevo proceso con fork().");
-                free(input);
-                free(commands);
                 exit(EXIT_FAILURE);
             }
             //Ejecucion del proceso hijo.
@@ -128,16 +124,16 @@ int main() {
                 //Esperar a que el proceso hijo termine
                 wait(NULL);
 
-                //Cerrar la escritura en el pipe y mantener la lectura para el próximo comando
+                //Cerrar el pipe de escritura
                 close(pipe_fds[1]);
+                //Pasarle el pipe de lectura al proximo proceso
                 in_fd = pipe_fds[0];
             }
         }
-        free(input);
-        free(commands); //Liberar la memoria de los comandos
+        free(commands); //Liberamos la memoria de los comandos
         printf("Tarea:~$ ");
     }
-    free(input); //Liberar la memoria de la línea de entrada
+    free(input); //Liberamos la memoria del input
     printf("\nAdios\n");
     return 0;
 }
