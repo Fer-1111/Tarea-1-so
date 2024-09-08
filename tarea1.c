@@ -4,6 +4,19 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
+typedef struct {
+    int numero;        // Identificador único del comando
+    char *comando;     // El comando favorito
+} Favorito;
+
+Favorito *favoritos = NULL;  // Arreglo dinámico para los favoritos
+int num_favoritos = 0;       // Contador de comandos en favoritos
+char *favoritos_path = NULL; // Variable global para almacenar la ruta del archivo de favoritos
+char *favoritos_path = NULL;  // Variable global para almacenar la ruta del archivo de favoritos
+
+void favs_crear(char *ruta);
+
+
 int main() {
     char *input = NULL;
     size_t bufflen = 0;
@@ -144,4 +157,16 @@ int main() {
     }
     printf("\nAdios\n");
     return 0;
+}
+void favs_crear(char *ruta) {
+    FILE *archivo = fopen(ruta, "w");  // Intentar crear el archivo en la ruta especificada
+    if (archivo == NULL) {
+        perror("Error al crear el archivo de favoritos");
+        return;
+    }
+    fclose(archivo);
+
+    // Guardar la ruta del archivo en la variable global
+    favoritos_path = strdup(ruta);
+    printf("Archivo de favoritos creado en: %s\n", ruta);
 }
