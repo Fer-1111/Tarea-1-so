@@ -11,7 +11,6 @@ typedef struct {
 
 Favorito *favoritos = NULL;  // Arreglo dinámico para los favoritos
 int num_favoritos = 0;       // Contador de comandos en favoritos
-char *favoritos_path = NULL; // Variable global para almacenar la ruta del archivo de favoritos
 char *favoritos_path = NULL;  // Variable global para almacenar la ruta del archivo de favoritos
 
 void favs_crear(char *ruta);
