@@ -3,6 +3,11 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <time.h>
+
+void killChild(int sigNum){
+    kill(getpid(), SIGKILL);
+}
 
 int main() {
     char *input = NULL;
@@ -46,6 +51,7 @@ int main() {
             commands[command_count - 1] = command;
             command = strtok(NULL, "|"); //Retoma desde el último token que se leyó.
         }
+
         /*Nota 1: Es necesario escribir los comandos con pipes SIN ESPACIOS EN BLANCO alrededor de '|', pero
         con espacios en blanco entre argumentos de un mismo comando.
          Ej:$ ps -aux|sort -nr -k 4|head -20
@@ -105,6 +111,39 @@ int main() {
                     args = (char**)realloc(args, sizeof(char *) * (argc));
                     args[argc - 1] = arg;
                     arg = strtok(NULL, " ");
+                }
+                if (strcmp(args[0], "set_recordatorio") == 0){
+                    pid_t reminder_pid = fork();
+                    if (reminder_pid == -1){                
+                        perror("Error al generar nuevo proceso con fork().");
+                        exit(EXIT_FAILURE);
+                    }
+                    if (reminder_pid == 0){
+                        signal(SIGALRM,killChild);
+                        int time = atoi(args[1]);
+                        if (time != 0 && argc > 2){
+                            sleep(time);
+                            printf("\nRecordatorio: ");
+                            for (int i = 2; i < argc; ++i){
+                                printf("%s ", args[i]);
+                            }
+                            printf("\n");
+                            printf("Tarea:~$ ");
+                            fflush(stdout);
+                            free(args);
+                            alarm(1);
+                            while(1);
+                        }else{
+                            printf("Error argumentos del comando no valido.\n");
+                            printf("Tarea:~$ ");
+                            fflush(stdout);
+                            free(args);
+                            alarm(1);
+                            while(1);
+                        }
+                    }else{
+                        kill(getpid(), SIGKILL);
+                    }
                 }
 
                 /*Nota para los desarrolladores: Debemos diferenciar nuestros comandos de los de linux
