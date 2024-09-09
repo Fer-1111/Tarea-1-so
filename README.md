@@ -4,14 +4,14 @@ Objetivos:
     Parte 1:
         -Prompt
         -Lectura de comandos con argumentos ilimitados.                    Listo
-        -Ejecución de comandos con fork(), exec() y pipes().               En camino 
+        -Ejecución de comandos con fork(), exec() y pipes().               Listo
         -Proceso padre espera a que termine el proceso hijo.               Listo
         -Enter = imprimir de nuevo el prompt.                              Listo
-        -Comunicación por pipes.                                           No implementado
-        -Comando exit.                                                     No implementado
-        -Comunicar error si hay comando inválido.                          Listo
+        -Comunicación por pipes.                                           Listo
+        -Comando exit.                                                     Listo
+        -Comunicar error si hay comando inválido.                          Requiere ajuste
     Parte 2.1:
-        -Definir EDD para almacenar favoritos                              No implementado
+        -Definir EDD para almacenar favoritos                              Listo
         -Ejecutar comando personalizado.                                   No implementado
         -Favs crear.                                                       No implementado
         -Adición automática de comoandos a favoritos (Primera vez).        No implementado

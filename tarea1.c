@@ -20,6 +20,8 @@ int main() {
     char *input = NULL;
     size_t bufflen = 0;
 
+    favs_crear("./misfavoritos.txt");
+
     printf("Tarea:~$ ");
 
     /*Un BUFFER es un área de memoria temporal utilizada para almacenar datos mientras
@@ -157,8 +159,16 @@ int main() {
     printf("\nAdios\n");
     return 0;
 }
+
 void favs_crear(char *ruta) {
-    FILE *archivo = fopen(ruta, "w");  // Intentar crear el archivo en la ruta especificada
+    // Verificar si el archivo ya existe
+    FILE *archivo = fopen(ruta, "r");
+    if (archivo != NULL) {
+        // El archivo ya existe
+        fclose(archivo);
+        return;
+    }
+    archivo = fopen(ruta, "w");  // Intentar crear el archivo en la ruta especificada
     if (archivo == NULL) {
         perror("Error al crear el archivo de favoritos");
         return;
@@ -167,5 +177,4 @@ void favs_crear(char *ruta) {
 
     // Guardar la ruta del archivo en la variable global
     favoritos_path = strdup(ruta);
-    printf("Archivo de favoritos creado en: %s\n", ruta);
 }
