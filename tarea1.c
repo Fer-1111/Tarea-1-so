@@ -5,6 +5,7 @@
 #include <sys/wait.h>
 #include <time.h>
 
+//Funcion que elimina el proceso al que pertenece tras recibir una señal
 void killChild(int sigNum){
     kill(getpid(), SIGKILL);
 }
@@ -112,16 +113,22 @@ int main() {
                     args[argc - 1] = arg;
                     arg = strtok(NULL, " ");
                 }
+                //Se verifica que el primer argumento del comando sea nuestro comando personalizado.
                 if (strcmp(args[0], "set_recordatorio") == 0){
+                    //Identificador del proceso que se encargara del recordatorio.
                     pid_t reminder_pid = fork();
+                    //Manejo de error de la funcion fork().
                     if (reminder_pid == -1){                
                         perror("Error al generar nuevo proceso con fork().");
                         exit(EXIT_FAILURE);
                     }
                     if (reminder_pid == 0){
+                        //receptor de señal que hara funcionar killChild cuando reciba una señal de alarm.
                         signal(SIGALRM,killChild);
+                        //Tiempo del Recordatorio dado por el argumento 1 del comando.
                         int time = atoi(args[1]);
                         if (time != 0 && argc > 2){
+                            //el proceso se detiene por el tiempo proporcionado por el comando.
                             sleep(time);
                             printf("\nRecordatorio: ");
                             for (int i = 2; i < argc; ++i){
@@ -130,8 +137,11 @@ int main() {
                             printf("\n");
                             printf("Tarea:~$ ");
                             fflush(stdout);
-                            free(args);
-                            alarm(1);
+                            //Liberamos la memoria de los argumentos del comando.
+                            free(args); 
+                            //señal utilizada para marcar el final del proceso.
+                            alarm(1); 
+                            //loop que da tiempo a la señal de activarse.
                             while(1);
                         }else{
                             printf("Error argumentos del comando no valido.\n");
@@ -142,6 +152,8 @@ int main() {
                             while(1);
                         }
                     }else{
+                        fflush(stdout);
+                        free(args);
                         kill(getpid(), SIGKILL);
                     }
                 }
