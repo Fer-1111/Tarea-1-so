@@ -9,8 +9,8 @@ char* favoritos_path = "./misFavoritos.txt"; //Ruta del archivo de comandos favo
 void favs_crear(char* path_archivo);
 int favs_guardar(char**favoritos, int favoritos_count, char* ruta);
 int favs_cargar(char***favoritos, int *favoritos_count, char* ruta);
-void favs_borrar(char*ruta);
-void favs_mostrar(char*ruta);
+int favs_borrar(char*ruta, char***favoritos, int* favoritos_count);
+int favs_mostrar(char*ruta);
 char* favs_ejecutar(char**favoritos, int i);
 void killChild(int sigNum);
 
@@ -129,9 +129,50 @@ int main() {
                     args[argc - 1] = arg;
                 }
 
+                //EJECUCION COMANDOS FAVS
+                if(strcmp(args[0], "favs") == 0) {
+                    if(args[1] != NULL) {
+                        if(strcmp(args[1], "mostrar") == 0) {
+                            int ejecucion;
+                            if(ejecucion = favs_mostrar(favoritos_path) == 0) {
+                                if(args != NULL) {
+                                    free(args);
+                                }
+                                exit(EXIT_SUCCESS);
+                            }
+                            else { //favs_mostrar fallo su ejecucion
+                                if(args != NULL) {
+                                    free(args);
+                                }
+                                exit(EXIT_FAILURE);
+                            }
+                        }
+                        else if(strcmp(args[1], "borrar") == 0) {
+                            int ejecucion;
+                            if(ejecucion = favs_borrar(favoritos_path, &favoritos, &favoritos_count) == 0) {
+                                if(args != NULL) {
+                                    free(args);
+                                }
+                                exit(EXIT_SUCCESS);
+                            }
+                            else { //favs borrar fallo su ejecucion
+                                if(args != NULL) {
+                                    free(args);
+                                }
+                                exit(EXIT_FAILURE);
+                            }                       
+                        }   
+                    } else {
+                        if(args != NULL) {
+                            free(args);
+                        }
+                        printf("favs no es un comando valido\n");
+                        exit(EXIT_FAILURE);
+                    }
+                }
                 //Si el comando no es personalizado:
                 //Ejecucion de comandos propios de linux con execvp.
-                if(execvp(args[0], args) == -1) {
+                else if(execvp(args[0], args) == -1) {
                     perror("El comando ingresado no es valido");
                     if(args != NULL) {
                         free(args);
@@ -280,7 +321,7 @@ int favs_cargar(char***favoritos, int *favoritos_count, char*ruta) {
     //Abrir el archivo en modo lectura
     FILE *archivo = fopen(ruta, "r");
     if (archivo == NULL) {
-        printf("Error al abrir archivo\n");
+        printf("favs mostrar: Error al abrir archivo\n");
         return 3;
     }
     //Leer línea por línea
@@ -306,5 +347,43 @@ int favs_cargar(char***favoritos, int *favoritos_count, char*ruta) {
     }
     // Cerrar el archivo
     fclose(archivo);
+    return 0;
+}
+
+int favs_mostrar(char* ruta) {
+    FILE *archivo = fopen(ruta, "r");
+    if (archivo == NULL) {
+        perror("Error al abrir el archivo");
+        return 1;
+    }
+
+    char linea[512]; //Buffer para leer cada línea
+    while(fgets(linea, sizeof(linea), archivo) != NULL) {
+        printf("%s", linea);
+    }
+    fclose(archivo);  // Cerrar el archivo
+    return 0;
+}
+
+int favs_borrar(char* ruta, char***favoritos, int*favoritos_count) {
+    FILE *archivo = fopen(ruta, "w");
+    if (archivo == NULL) {
+        perror("favs borrar: Error al abrir el archivo");
+        return 1;
+    }
+    //Cerrar el archivo, se vacia automaticamente
+    fclose(archivo);
+
+    //Borrar el arreglo de comandos favoritos
+    for(int i = *favoritos_count - 1; i >= 0; i--) {
+        if((*favoritos)[i] != NULL) {
+            free((*favoritos)[i]);
+        }
+    }
+    if(*favoritos != NULL) {
+        free(*favoritos);
+    }
+    *favoritos = NULL;
+    *favoritos_count = 0;
     return 0;
 }
