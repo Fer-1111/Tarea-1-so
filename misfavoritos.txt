@@ -1,2 +1,3 @@
-1
-ls
+2
+touch hola.txt
+rm hola.txt

@@ -8,7 +8,10 @@ char *favoritos_path = NULL;  // Variable global para almacenar la ruta del arch
 
 void favs_crear(char *ruta);
 void favs_guardar(char**favoritos, int favoritos_count, char* ruta);
-void favs_cargar(char**favoritos, int favoritos_count, char* ruta);
+void favs_cargar(char***favoritos, int favoritos_count, char* ruta);
+void favs_borrar();
+void favs_mostrar();
+void favs_ejecutar();
 void killChild(int sigNum);
 
 int main() {
@@ -254,6 +257,9 @@ void favs_guardar(char** favoritos, int favoritos_count, char* ruta) {
         return;
     }
     FILE *archivo = fopen(ruta, "w");
+    if (archivo == NULL) {
+        return;
+    }
     //El primer dato del archivo será la cantidad de comandos favoritos
     fprintf(archivo, "%d\n", favoritos_count);
 
@@ -266,10 +272,40 @@ void favs_guardar(char** favoritos, int favoritos_count, char* ruta) {
     return;
 }
 
-void favs_cargar(char**favoritos, int favoritos_count, char*ruta) {
+void favs_cargar(char***favoritos, int favoritos_count, char*ruta) {
+    if(ruta == NULL) {
+        return;
+    }
+    // Abrir el archivo en modo lectura
+    FILE *archivo = fopen(ruta, "r");
+    // Verificar si el archivo se abrió correctamente
+    if (archivo == NULL) {
+        return;
+    }
+    // Leer línea por línea
+    fscanf(archivo, "%d", &favoritos_count);
+    *favoritos = (char **)realloc(*favoritos, sizeof(char *) * (favoritos_count));
+    for(int k = 0; k < favoritos_count; k++) {
+        fgets(*favoritos[k], sizeof(*favoritos[k]), archivo);
+        (*favoritos)[k][strcspn((*favoritos)[k], "\n")] = '\0';
+    }
+    // Cerrar el archivo
+    fclose(archivo);
+
+    return;
+}
+
+void favs_borrar() {
 
 }
 
+void favs_mostrar() {
+
+}
+
+void favs_ejecutar() {
+    
+}
 //Funcion que elimina el proceso al que pertenece tras recibir una señal
 void killChild(int sigNum){
     kill(getpid(), SIGKILL);
