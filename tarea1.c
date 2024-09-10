@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <signal.h>
 
 char* favoritos_path = "./misFavoritos.txt"; //Ruta del archivo de comandos favoritos
 
@@ -11,8 +12,10 @@ int favs_guardar(char**favoritos, int favoritos_count, char* ruta);
 int favs_cargar(char***favoritos, int *favoritos_count, char* ruta);
 int favs_borrar(char*ruta, char***favoritos, int* favoritos_count);
 int favs_mostrar(char*ruta);
-char* favs_ejecutar(char**favoritos, int i);
 void killChild(int sigNum);
+//char* favs_ejecutar(char**favoritos, int i);
+//favs_buscar
+//favs_eliminar
 
 int main() {
     char* input = NULL; //Buffer de entrada por teclado
@@ -170,8 +173,47 @@ int main() {
                         exit(EXIT_FAILURE);
                     }
                 }
-                //Si el comando no es personalizado:
-                //Ejecucion de comandos propios de linux con execvp.
+
+                //EJECUCION SET_RECORDATORIO
+                else if(strcmp(args[0], "set_recordatorio") == 0 && (args[1] != NULL) && (args[2] != NULL)){
+                    //Identificador del proceso que se encargara del recordatorio.
+                    pid_t reminder_pid = fork();
+                    //Manejo de error de la funcion fork().
+                    if(reminder_pid == -1){                
+                        perror("Error al generar nuevo proceso con fork()");
+                        exit(EXIT_FAILURE);
+                    }
+                    if(reminder_pid == 0){
+                        //receptor de señal que hara funcionar killChild cuando reciba una señal de alarm.
+                        signal(SIGALRM,killChild);
+                        //Tiempo del Recordatorio dado por el argumento 1 del comando.
+                        int time = atoi(args[1]);
+                        if(time > 0 && argc > 2){
+                            //el proceso se detiene por el tiempo proporcionado por el comando.
+                            sleep(time);
+                            printf("\nRecordatorio: ");
+                            for(int i = 2; i < argc - 1; ++i){
+                                printf("%s ", args[i]);
+                            }
+                            printf("\n");
+                            printf("Tarea:~$ ");
+                            fflush(stdout);
+                            exit(EXIT_SUCCESS);
+
+                        }else{
+                            printf("Error: argumentos de set_recordatorio no validos\n");
+                            exit(EXIT_FAILURE);
+                        }
+                    }else{
+                        if(args != NULL) {
+                                free(args);
+                        }
+                        kill(getpid(), SIGTERM);
+                    }
+                    exit(EXIT_SUCCESS);
+                }
+
+                //EJECUCION DE COMANDOS LINUX
                 else if(execvp(args[0], args) == -1) {
                     perror("El comando ingresado no es valido");
                     if(args != NULL) {
@@ -225,7 +267,9 @@ int main() {
                     break;
                 }
             }
-            if(comandoRegistrado == 0) {
+            int subStrFavs;
+            //Si el comando no esta registrado y ademas no esta asociado al manejo de favoritos, entonces se agrega a favoritos
+            if(comandoRegistrado == 0 && (subStrFavs = strstr(inputcpy, "favs") == NULL)) {
                 favoritos_count += 1;
                 favoritos = (char**)realloc(favoritos, sizeof(char *) * (favoritos_count));
                 favoritos[favoritos_count - 1] = (char*)malloc(strlen(inputcpy) + 1);
@@ -358,8 +402,10 @@ int favs_mostrar(char* ruta) {
     }
 
     char linea[512]; //Buffer para leer cada línea
+    int i = 0; //id comando favorito
     while(fgets(linea, sizeof(linea), archivo) != NULL) {
-        printf("%s", linea);
+        printf("%d %s", i,linea);
+        i++;
     }
     fclose(archivo);  // Cerrar el archivo
     return 0;
@@ -386,4 +432,7 @@ int favs_borrar(char* ruta, char***favoritos, int*favoritos_count) {
     *favoritos = NULL;
     *favoritos_count = 0;
     return 0;
+}
+void killChild(int sigNum){
+    kill(getpid(), SIGKILL);
 }
