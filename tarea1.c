@@ -7,6 +7,7 @@
 char *favoritos_path = NULL;  // Variable global para almacenar la ruta del archivo de favoritos
 
 void favs_crear(char *ruta);
+void favs_guardar(char**favoritos, int favoritos_count, char* ruta);
 
 int main() {
     char *input = NULL;
@@ -29,6 +30,7 @@ int main() {
 
     //Si getline tiene un error al leer la entrada retorna -1.
     while (getline(&input, &bufflen, stdin) != -1) { //Aquí len es el tamaño que se le asigna al buffer.
+        //Variable que indica si los comandos se ejcutaron correctamente.
         int huboerror = 0;
         //Se reemplaza el salto de linea '\n' de la entrada por un '\0' (fin de string).
         if (input[strlen(input) - 1] == '\n') {
@@ -37,6 +39,7 @@ int main() {
 
         //Implementación del comando exit.
         if (strcmp(input, "exit") == 0) {
+            favs_guardar(favoritos, favoritos_count, "./misfavoritos.txt");
             free(input);
             return 0;
         }
@@ -142,13 +145,27 @@ int main() {
                 }
             }
         }
-        //Ingresar el comando a favoritos
+        //Si no hubo error de ejecucion, se intenta ingresar el comando a favoritos
 	    if(huboerror == 0){
-	    favoritos_count +=1;
-	    favoritos = (char**)realloc(favoritos,sizeof(char*)*(favoritos_count));
-	    favoritos[favoritos_count -1] = strdup(input);
-	    }else{ //si hay error reinicia la flag
-	        huboerror=0;	
+            //Se verifica si el comando ya esta en los favoritos
+            int comandoNoEsta = 0;
+            for(int k = 0; k < favoritos_count; k++) {
+                if(*favoritos[k] == *input) {
+                    comandoNoEsta = 1;
+                    printf("El comando ya esta guardado\n");
+                    break;
+                }
+            }
+            //Si corresponde se ingresa el ultimo comando ejecutado a favoritos
+            if(comandoNoEsta == 0) {
+                favoritos_count +=1;
+                favoritos = (char**)realloc(favoritos,sizeof(char*)*(favoritos_count));
+                favoritos[favoritos_count -1] = strdup(input);
+            }
+        } 
+        //Si no corresponde, no se ingresa el comando a favoritos y reiniciamos el flag de error de ejecucion
+        else {
+	        huboerror = 0;	
 	    }
 
         if(input != NULL) {
@@ -160,7 +177,6 @@ int main() {
         free(commands); //Liberamos la memoria de los comandos
         printf("Tarea:~$ ");
     }
-    printf("\nAdios\n");
     return 0;
 }
 
@@ -181,4 +197,28 @@ void favs_crear(char *ruta) {
 
     // Guardar la ruta del archivo en la variable global
     favoritos_path = strdup(ruta);
+}
+
+void favs_guardar(char** favoritos, int favoritos_count, char* ruta) {
+    //Manejo de errores: Si los punteros son NULL, la funcion no hace nada.
+    if(favoritos == NULL) {
+        return;
+    }
+    if(ruta == NULL) {
+        return;
+    }
+    FILE *archivo = fopen(ruta, "w");
+    char cadena[12];
+    sprintf(cadena, "%d", favoritos_count);
+    //El primer dato del archivo será la cantidad de comandos favoritos
+    fputs(cadena, archivo);
+    fputs("\n",archivo);
+
+    //Guardamos los comandos en el archivo
+    for(int i = 0; i < favoritos_count; i++) {
+        fputs(favoritos[i], archivo);
+        fputs("\n", archivo);
+    }
+    fclose(archivo);
+    return;
 }
