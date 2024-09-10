@@ -4,21 +4,15 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-typedef struct {
-    int numero;        // Identificador único del comando
-    char *comando;     // El comando favorito
-} Favorito;
-
-Favorito *favoritos = NULL;  // Arreglo dinámico para los favoritos
-int num_favoritos = 0;       // Contador de comandos en favoritos
 char *favoritos_path = NULL;  // Variable global para almacenar la ruta del archivo de favoritos
 
 void favs_crear(char *ruta);
 
-
 int main() {
     char *input = NULL;
     size_t bufflen = 0;
+    char **favoritos = NULL; // Vector dinámico de favoritos.
+    int favoritos_count = 0;
 
     favs_crear("./misfavoritos.txt");
 
@@ -35,7 +29,7 @@ int main() {
 
     //Si getline tiene un error al leer la entrada retorna -1.
     while (getline(&input, &bufflen, stdin) != -1) { //Aquí len es el tamaño que se le asigna al buffer.
-        
+        int huboerror = 0;
         //Se reemplaza el salto de linea '\n' de la entrada por un '\0' (fin de string).
         if (input[strlen(input) - 1] == '\n') {
             input[strlen(input) - 1] = '\0';
@@ -129,6 +123,7 @@ int main() {
                 // Ejecucion de comandos propios de linux con execvp.
                 if (execvp(args[0], args) == -1) {
                     perror("execvp");
+                    huboerror = 1;
                     free(args);
                     exit(EXIT_FAILURE);
                 }
@@ -147,6 +142,15 @@ int main() {
                 }
             }
         }
+        //Ingresar el comando a favoritos
+	    if(huboerror == 0){
+	    favoritos_count +=1;
+	    favoritos = (char**)realloc(favoritos,sizeof(char*)*(favoritos_count));
+	    favoritos[favoritos_count -1] = strdup(input);
+	    }else{ //si hay error reinicia la flag
+	        huboerror=0;	
+	    }
+
         if(input != NULL) {
             free(input);
             input = NULL;
