@@ -8,4 +8,5 @@ Syntaxis de comandos:
 - Comandos favs:
 - $ favs mostrar
 - $ favs borrar
+- favs crear, guardar y cargar se ejecutan por defecto, no estan a disposicion del usuario.
 - Set recordatorio: $ set_recordatorio [tiempo en segundos] [texto del recordatiorio] (Nota: Se imprimira el texto del recordatiorio un vez pasado el tiempo especificado
