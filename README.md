@@ -1,28 +1,12 @@
-# Tarea-1-so
-
-Objetivos:
-    Parte 1:
-        -Prompt
-        -Lectura de comandos con argumentos ilimitados.                    Listo
-        -Ejecución de comandos con fork(), exec() y pipes().               Listo
-        -Proceso padre espera a que termine el proceso hijo.               Listo
-        -Enter = imprimir de nuevo el prompt.                              Listo
-        -Comunicación por pipes.                                           Listo
-        -Comando exit.                                                     Listo
-        -Comunicar error si hay comando inválido.                          Requiere ajuste
-    Parte 2.1:
-        -Definir EDD para almacenar favoritos                              Listo
-        -Ejecutar comando personalizado.                                   No implementado
-        -Favs crear.                                                       No implementado
-        -Adición automática de comoandos a favoritos (Primera vez).        No implementado
-        -Favs mostrar.                                                     No implementado
-        -Favs eliminar.                                                    No implementado
-        -Favs buscar.                                                      No implementado
-        -Favs num.                                                         No implementado
-        -Favs cargar.                                                      No implementado
-        -Favs guardar.                                                     No implementado
-    
-    
-    Parte 2.2:
-        -Set recordatorio.                                                 No implementado
-            
+Compilar:
+Usar Compilador gcc en el archivo tarea1.c
+Sintaxis de los comandos:
+	-exit
+	detiene la ejecucion de nuestro interprete
+	-favs 
+	asd
+	-set_recordatorio [tiempo en segundos] [texto del recordatiorio]
+	se imprimira el texto del recordatior pasado el tiempo ingresado
+El resto de comandos linux son ejecutados la mayoria con normalidad pero hay algunas excepciones estre estas:
+	-Las pipes se puede ejecutar con la pipe unida al comando anterior no es necesario un espacion para separarlas comando1|comando2
+	-El comando cd no funciona correctamente por las limitaciones de execvp pero una forma de implementarlo seria con la funcion chdir() de unistd.h
