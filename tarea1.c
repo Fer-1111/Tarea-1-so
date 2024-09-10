@@ -9,6 +9,7 @@ char *favoritos_path = NULL;  // Variable global para almacenar la ruta del arch
 void favs_crear(char *ruta);
 void favs_guardar(char**favoritos, int favoritos_count, char* ruta);
 void favs_cargar(char**favoritos, int favoritos_count, char* ruta);
+void killChild(int sigNum);
 
 int main() {
     char *input = NULL;
@@ -119,6 +120,51 @@ int main() {
                     arg = strtok(NULL, " ");
                 }
 
+                //Se verifica que el primer argumento del comando sea nuestro comando personalizado.
+                if (strcmp(args[0], "set_recordatorio") == 0){
+                    //Identificador del proceso que se encargara del recordatorio.
+                    pid_t reminder_pid = fork();
+                    //Manejo de error de la funcion fork().
+                    if (reminder_pid == -1){                
+                        perror("Error al generar nuevo proceso con fork().");
+                        exit(EXIT_FAILURE);
+                    }
+                    if (reminder_pid == 0){
+                        //receptor de señal que hara funcionar killChild cuando reciba una señal de alarm.
+                        signal(SIGALRM,killChild);
+                        //Tiempo del Recordatorio dado por el argumento 1 del comando.
+                        int time = atoi(args[1]);
+                        if (time != 0 && argc > 2){
+                            //el proceso se detiene por el tiempo proporcionado por el comando.
+                            sleep(time);
+                            printf("\nRecordatorio: ");
+                            for (int i = 2; i < argc; ++i){
+                                printf("%s ", args[i]);
+                            }
+                            printf("\n");
+                            printf("Tarea:~$ ");
+                            fflush(stdout);
+                            //Liberamos la memoria de los argumentos del comando.
+                            free(args); 
+                            //señal utilizada para marcar el final del proceso.
+                            alarm(1); 
+                            //loop que da tiempo a la señal de activarse.
+                            while(1);
+                        }else{
+                            printf("Error argumentos del comando no valido.\n");
+                            printf("Tarea:~$ ");
+                            fflush(stdout);
+                            free(args);
+                            alarm(1);
+                            while(1);
+                        }
+                    }else{
+                        fflush(stdout);
+                        free(args);
+                        kill(getpid(), SIGKILL);
+                    }
+                }
+
                 /*Nota para los desarrolladores: Debemos diferenciar nuestros comandos de los de linux
                 antes de ingresarlos a execvps
                 
@@ -222,4 +268,9 @@ void favs_guardar(char** favoritos, int favoritos_count, char* ruta) {
 
 void favs_cargar(char**favoritos, int favoritos_count, char*ruta) {
 
+}
+
+//Funcion que elimina el proceso al que pertenece tras recibir una señal
+void killChild(int sigNum){
+    kill(getpid(), SIGKILL);
 }
