@@ -8,11 +8,11 @@ char *favoritos_path = NULL;  // Variable global para almacenar la ruta del arch
 
 void favs_crear(char *ruta);
 void favs_guardar(char**favoritos, int favoritos_count, char* ruta);
-void favs_cargar(char***favoritos, int favoritos_count, char* ruta);
+void favs_cargar(char***favoritos, int *favoritos_count, char* ruta);
 void favs_borrar();
 void favs_mostrar();
 void favs_ejecutar();
-void killChild(int sigNum);
+//void killChild(int sigNum);
 
 int main() {
     char *input = NULL;
@@ -21,6 +21,8 @@ int main() {
     int favoritos_count = 0;
 
     favs_crear("./misfavoritos.txt");
+
+    favs_cargar(&favoritos, &favoritos_count, "./misfavoritos.txt");
 
     printf("Tarea:~$ ");
 
@@ -45,6 +47,10 @@ int main() {
         //Implementación del comando exit.
         if (strcmp(input, "exit") == 0) {
             favs_guardar(favoritos, favoritos_count, "./misfavoritos.txt");
+            for(int s = favoritos_count - 1; s >= 0; s--) {
+                free(favoritos[s]);
+            }
+            free(favoritos);
             free(input);
             return 0;
         }
@@ -124,7 +130,7 @@ int main() {
                 }
 
                 //Se verifica que el primer argumento del comando sea nuestro comando personalizado.
-                if (strcmp(args[0], "set_recordatorio") == 0){
+                /*if (strcmp(args[0], "set_recordatorio") == 0){
                     //Identificador del proceso que se encargara del recordatorio.
                     pid_t reminder_pid = fork();
                     //Manejo de error de la funcion fork().
@@ -148,7 +154,7 @@ int main() {
                             printf("Tarea:~$ ");
                             fflush(stdout);
                             //Liberamos la memoria de los argumentos del comando.
-                            free(args); 
+                            free(args);
                             //señal utilizada para marcar el final del proceso.
                             alarm(1); 
                             //loop que da tiempo a la señal de activarse.
@@ -166,21 +172,17 @@ int main() {
                         free(args);
                         kill(getpid(), SIGKILL);
                     }
-                }
-
-                /*Nota para los desarrolladores: Debemos diferenciar nuestros comandos de los de linux
-                antes de ingresarlos a execvps
-                
-                Se debe mejorar el manejo de errores de execvp*/
-
+                }*/
+               
+                //Si el comando no es personalizado:
                 // Ejecucion de comandos propios de linux con execvp.
                 if (execvp(args[0], args) == -1) {
-                    perror("execvp");
+                    printf("El comando ingresado no es valido\n");
                     huboerror = 1;
                     free(args);
                     exit(EXIT_FAILURE);
                 }
-            } 
+            }
             //Ejecución del proceso padre.
             else {
                 //Esperar a que el proceso hijo termine
@@ -223,7 +225,7 @@ int main() {
         }
         bufflen = 0;
         fflush(stdout);
-        free(commands); //Liberamos la memoria de los comandos
+        free(commands);
         printf("Tarea:~$ ");
     }
     return 0;
@@ -272,7 +274,7 @@ void favs_guardar(char** favoritos, int favoritos_count, char* ruta) {
     return;
 }
 
-void favs_cargar(char***favoritos, int favoritos_count, char*ruta) {
+void favs_cargar(char***favoritos, int *favoritos_count, char*ruta) {
     if(ruta == NULL) {
         return;
     }
@@ -280,18 +282,38 @@ void favs_cargar(char***favoritos, int favoritos_count, char*ruta) {
     FILE *archivo = fopen(ruta, "r");
     // Verificar si el archivo se abrió correctamente
     if (archivo == NULL) {
+        printf("Error al cargar favoritos\n");
         return;
     }
     // Leer línea por línea
-    fscanf(archivo, "%d", &favoritos_count);
-    *favoritos = (char **)realloc(*favoritos, sizeof(char *) * (favoritos_count));
-    for(int k = 0; k < favoritos_count; k++) {
-        fgets(*favoritos[k], sizeof(*favoritos[k]), archivo);
+    fscanf(archivo, "%d", favoritos_count);
+    *favoritos = (char **)realloc(*favoritos, sizeof(char *) * (*favoritos_count));
+    if (*favoritos == NULL) {
+        fclose(archivo);
+        printf("Error al cargar favoritos\n");
+        return;
+    }
+
+    for (int k = 0; k < *favoritos_count; k++) {
+        // Asignar memoria para cada cadena
+        (*favoritos)[k] = (char *)malloc(512); // Asumiendo un tamaño máximo de 1024 caracteres
+        if ((*favoritos)[k] == NULL) {
+            // Liberar memoria previamente asignada en caso de fallo
+            for (int j = 0; j < k; j++) {
+                free((*favoritos)[j]);
+            }
+            free(*favoritos);
+            fclose(archivo);
+            return;
+        }
+        
+        // Leer la línea
+        fgets((*favoritos)[k], 512, archivo);
+        // Eliminar el salto de línea si existe
         (*favoritos)[k][strcspn((*favoritos)[k], "\n")] = '\0';
     }
     // Cerrar el archivo
     fclose(archivo);
-
     return;
 }
 
@@ -304,9 +326,9 @@ void favs_mostrar() {
 }
 
 void favs_ejecutar() {
-    
+
 }
-//Funcion que elimina el proceso al que pertenece tras recibir una señal
+/*//Funcion que elimina el proceso al que pertenece tras recibir una señal
 void killChild(int sigNum){
     kill(getpid(), SIGKILL);
-}
+}*/
