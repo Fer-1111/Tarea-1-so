@@ -8,6 +8,7 @@ char *favoritos_path = NULL;  // Variable global para almacenar la ruta del arch
 
 void favs_crear(char *ruta);
 void favs_guardar(char**favoritos, int favoritos_count, char* ruta);
+void favs_cargar(char**favoritos, int favoritos_count, char* ruta);
 
 int main() {
     char *input = NULL;
@@ -152,7 +153,6 @@ int main() {
             for(int k = 0; k < favoritos_count; k++) {
                 if(*favoritos[k] == *input) {
                     comandoNoEsta = 1;
-                    printf("El comando ya esta guardado\n");
                     break;
                 }
             }
@@ -208,11 +208,8 @@ void favs_guardar(char** favoritos, int favoritos_count, char* ruta) {
         return;
     }
     FILE *archivo = fopen(ruta, "w");
-    char cadena[12];
-    sprintf(cadena, "%d", favoritos_count);
     //El primer dato del archivo será la cantidad de comandos favoritos
-    fputs(cadena, archivo);
-    fputs("\n",archivo);
+    fprintf(archivo, "%d\n", favoritos_count);
 
     //Guardamos los comandos en el archivo
     for(int i = 0; i < favoritos_count; i++) {
@@ -221,4 +218,8 @@ void favs_guardar(char** favoritos, int favoritos_count, char* ruta) {
     }
     fclose(archivo);
     return;
+}
+
+void favs_cargar(char**favoritos, int favoritos_count, char*ruta) {
+
 }
